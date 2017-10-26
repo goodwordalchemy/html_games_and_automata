@@ -1,0 +1,34 @@
+<div id="grid"></div>
+<button id="next">Next generation</button>
+
+<script>
+    NROWS = 10
+    MCOLUMNS = 10
+    
+    function createGrid() {
+        grid = document.getElementById('grid');
+
+        for (var i = 0; i < NROWS; i++) {
+            row = document.createElement('div');
+            row.className = 'row';
+
+            grid.appendChild(row);
+
+            for (var j = 0; j < MCOLUMNS; j++) {
+                cell = document.createElement('input');
+                cell.type = 'checkbox'
+
+                row.appendChild(cell);
+            }
+        }
+
+        return grid;
+    }
+
+
+    function main() {
+        board = createGrid();
+    }
+
+    main();
+</script>
