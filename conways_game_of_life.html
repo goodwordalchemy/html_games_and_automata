@@ -2,19 +2,20 @@
 <button id="next">Next generation</button>
 
 <script>
-    NROWS = 10
-    MCOLUMNS = 10
+    CELL_CHECKED_PROB = 0.5;
+    N_ROWS = 10
+    M_COLUMNS = 10
     
     function createGrid() {
         grid = document.getElementById('grid');
 
-        for (var i = 0; i < NROWS; i++) {
+        for (var i = 0; i < N_ROWS; i++) {
             row = document.createElement('div');
             row.className = 'row';
 
             grid.appendChild(row);
 
-            for (var j = 0; j < MCOLUMNS; j++) {
+            for (var j = 0; j < M_COLUMNS; j++) {
                 cell = document.createElement('input');
                 cell.type = 'checkbox'
 
@@ -25,9 +26,27 @@
         return grid;
     }
 
+    function randomlyAssignGridPositions(grid) {
+        rows = grid.childNodes;
+
+        for (var i = 0; i < rows.length; i++) {
+            cells = rows[i].childNodes;
+
+            for (var j = 0; j < cells.length; j++) {
+                if (Math.random() < CELL_CHECKED_PROB) {
+                    cells[j].checked = true;
+                }
+            }
+        }
+
+        
+    }
+
 
     function main() {
         board = createGrid();
+        
+        grid = randomlyAssignGridPositions(grid);
     }
 
     main();
