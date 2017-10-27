@@ -38,15 +38,79 @@
                 }
             }
         }
-
+        
+        return grid;
         
     }
 
+    function getNeighbors(grid, row, column) {
+        var numberRows = grid.childNodes.length;
+        var numberColumns = grid.childNodes[0].childNodes.length
+
+        var neighbors = [];
+        for (var i = -1; i <= 1; i++) {
+            for (var j = -1; j <= 1; j++) {
+                if (i === j === 0) {
+                    continue;
+                } else if (row + i < 0 || row + i >= numberRows) {
+                    continue;
+                } else if (column + i < 0 || column + i >= numberColumns) {
+                    continue;
+                } else {
+                    neighbors.push(grid.childNodes[row].childNodes[column]);
+                }
+            }
+        }
+
+        return neighbors;
+    }
+
+    function stepForward(grid) {
+        rows = grid.childNodes;
+
+        for (var i = 0; i < rows.length; i++) {
+            cells = rows[i].childNodes;
+
+            for (var j = 0; j < cells.length; j++) {
+                neighbors = getNeighbors(grid, i, j);
+
+                numberOfLiveNeighbors = 0;
+                for (var nIndex = 0; nIndex < neighbors.length; nIndex++) {
+                    if (neighbors[nIndex].checked) {
+                        numberOfLiveNeighbors++;
+                    }
+                }
+
+                debugger;
+
+                currentCell = cells[j];
+
+                if (currentCell.checked) {
+                    if (numberOfLiveNeighbors < 2 || numberOfLiveNeighbors > 3) {
+                        currentCell.checked = false;
+                    }
+                } else {
+                    if (numberOfLiveNeighbors === 3) {
+                        currentCell.checked = true;
+                    }
+                }
+            }
+        }
+        
+        return grid;
+        
+    } 
 
     function main() {
         board = createGrid();
         
         grid = randomlyAssignGridPositions(grid);
+        
+        nextButton = document.getElementById('next');
+        nextButton.addEventListener('click', function() {
+            stepForward(grid);
+        });
+        
     }
 
     main();
