@@ -1,117 +1,160 @@
 <div id="grid"></div>
 <button id="next">Next generation</button>
+<button id="animate">Animate</button>
 
 <script>
+    ANIMATION_TIME_STEP = 500; // milliseconds
+
     CELL_CHECKED_PROB = 0.5;
-    N_ROWS = 10
-    M_COLUMNS = 10
-    
-    function createGrid() {
-        grid = document.getElementById('grid');
+    N_ROWS = 25;
+    M_COLUMNS = 25;
 
-        for (var i = 0; i < N_ROWS; i++) {
-            row = document.createElement('div');
-            row.className = 'row';
+    function Board(nRows, mColumns) {
+        this.nRows = nRows;
+        this.mColumns = mColumns;
 
-            grid.appendChild(row);
+        this.gridElt = document.getElementById('grid');
+        
+        this.createGrid = function() {
+            for (var i = 0; i < this.nRows; i++) {
+                row = document.createElement('div');
+                row.className = 'row';
 
-            for (var j = 0; j < M_COLUMNS; j++) {
-                cell = document.createElement('input');
-                cell.type = 'checkbox'
+                this.gridElt.appendChild(row);
 
-                row.appendChild(cell);
-            }
-        }
+                for (var j = 0; j < M_COLUMNS; j++) {
+                    cell = document.createElement('input');
+                    cell.type = 'checkbox'
 
-        return grid;
-    }
-
-    function randomlyAssignGridPositions(grid) {
-        rows = grid.childNodes;
-
-        for (var i = 0; i < rows.length; i++) {
-            cells = rows[i].childNodes;
-
-            for (var j = 0; j < cells.length; j++) {
-                if (Math.random() < CELL_CHECKED_PROB) {
-                    cells[j].checked = true;
+                    row.appendChild(cell);
                 }
             }
-        }
-        
-        return grid;
-        
-    }
+        };
 
-    function getNeighbors(grid, row, column) {
-        var numberRows = grid.childNodes.length;
-        var numberColumns = grid.childNodes[0].childNodes.length
+        this.getCell = function(rowNum, colNum) {
+            row = this.gridElt.childNodes[rowNum];
+            cell = row.childNodes[colNum];
 
-        var neighbors = [];
-        for (var i = -1; i <= 1; i++) {
-            for (var j = -1; j <= 1; j++) {
-                if (i === j === 0) {
-                    continue;
-                } else if (row + i < 0 || row + i >= numberRows) {
-                    continue;
-                } else if (column + i < 0 || column + i >= numberColumns) {
-                    continue;
+            return cell;
+        };
+
+        this.randomlyAssignCellStates = function() {
+            for (var i = 0; i < this.nRows; i++) {
+                for (var j = 0; j < this.mColumns; j++) {
+                    cell = this.getCell(i, j);
+
+                    if (Math.random() < CELL_CHECKED_PROB) {
+                        cell.checked = true;
+                    }
+                }
+            }
+        };
+
+        this.initialize = function() {
+            this.createGrid();
+            this.randomlyAssignCellStates();
+        };
+
+        this.getCellNeighbors = function(rowNum, colNum) {
+            var neighbors = [];
+            for (var i = -1; i <= 1; i++) {
+                for (var j = -1; j <= 1; j++) {
+                    if (i == 0 && j == 0) {
+                        continue;
+                    } else if (rowNum + i < 0 || rowNum + i >= this.nRows - 1) {
+                        continue;
+                    } else if (colNum + j < 0 || colNum + j >= this.mColumns - 1) {
+                        continue;
+                    } else {
+                        neighbors.push(this.getCell(rowNum + i, colNum + j));
+                    }
+                }
+            }
+
+            return neighbors;
+        };
+
+        this.getNumberLivingNeighbors = function(rowNum, colNum) {
+            var neighbors = this.getCellNeighbors(rowNum, colNum);
+
+            var numberLivingNeighbors = 0;
+            for (var i = 0; i < neighbors.length; i++) {
+                if (neighbors[i].checked) {
+                    numberLivingNeighbors++;
+                }
+            }
+
+            return numberLivingNeighbors;
+        };
+
+        this.determineCellLives = function(rowNum, colNum) {
+            var cell = this.getCell(rowNum, colNum);
+            var numberLivingNeighbors = this.getNumberLivingNeighbors(rowNum, colNum);
+
+            if (cell.checked) {
+                if (numberLivingNeighbors < 2 || numberLivingNeighbors > 3) {
+                    return false;
                 } else {
-                    neighbors.push(grid.childNodes[row].childNodes[column]);
+                    return true;
                 }
-            }
-        }
-
-        return neighbors;
-    }
-
-    function stepForward(grid) {
-        rows = grid.childNodes;
-
-        for (var i = 0; i < rows.length; i++) {
-            cells = rows[i].childNodes;
-
-            for (var j = 0; j < cells.length; j++) {
-                neighbors = getNeighbors(grid, i, j);
-
-                numberOfLiveNeighbors = 0;
-                for (var nIndex = 0; nIndex < neighbors.length; nIndex++) {
-                    if (neighbors[nIndex].checked) {
-                        numberOfLiveNeighbors++;
-                    }
-                }
-
-                debugger;
-
-                currentCell = cells[j];
-
-                if (currentCell.checked) {
-                    if (numberOfLiveNeighbors < 2 || numberOfLiveNeighbors > 3) {
-                        currentCell.checked = false;
-                    }
+            } else {
+                if (numberLivingNeighbors == 3) {
+                    return true;
                 } else {
-                    if (numberOfLiveNeighbors === 3) {
-                        currentCell.checked = true;
-                    }
+                    return false;
                 }
             }
+        };
+
+        this.stepForward = function() {
+            console.log('stepping forward');
+            var nextState = [];
+            
+            for (var i = 0; i < this.nRows; i++) {
+                var nextRowState = [];
+
+                for (var j = 0; j < this.mColumns; j++) {
+                    nextRowState.push(this.determineCellLives(i, j));
+                }
+
+                nextState.push(nextRowState);
+            }
+
+            for (var i = 0; i < this.nRows; i++) {
+                for (var j = 0; j < this.mColumns; j++) {
+                    var cell = this.getCell(i, j);
+
+                    cell.checked = nextState[i][j];
+                }
+            }
+        };
+
+        this.animate = function() {
+            setInterval(
+                this.stepForward.bind(this), 
+                ANIMATION_TIME_STEP
+            )
         }
-        
-        return grid;
-        
-    } 
+    }
 
     function main() {
-        board = createGrid();
-        
-        grid = randomlyAssignGridPositions(grid);
-        
+        var board = new Board(N_ROWS, M_COLUMNS);
+
+        board.initialize();
+
         nextButton = document.getElementById('next');
         nextButton.addEventListener('click', function() {
-            stepForward(grid);
+            board.stepForward();
+         });
+
+        animateButton = document.getElementById('animate');
+        animateButton.addEventListener('click', function() {
+            console.log('animating');
+            board.animate();
         });
-        
     }
 
     main();
+    
+
 </script>
