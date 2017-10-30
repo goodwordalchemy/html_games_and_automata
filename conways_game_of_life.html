@@ -6,8 +6,8 @@
     ANIMATION_TIME_STEP = 500; // milliseconds
 
     CELL_CHECKED_PROB = 0.5;
-    N_ROWS = 25;
-    M_COLUMNS = 25;
+    N_ROWS = 10;
+    M_COLUMNS = 10;
 
     function Board(nRows, mColumns) {
         this.nRows = nRows;
@@ -61,13 +61,28 @@
                 for (var j = -1; j <= 1; j++) {
                     if (i == 0 && j == 0) {
                         continue;
-                    } else if (rowNum + i < 0 || rowNum + i >= this.nRows - 1) {
-                        continue;
-                    } else if (colNum + j < 0 || colNum + j >= this.mColumns - 1) {
-                        continue;
-                    } else {
-                        neighbors.push(this.getCell(rowNum + i, colNum + j));
                     }
+
+                    var altRow = rowNum;
+                    var altCol = colNum;
+
+                    if (rowNum + i < 0) {
+                         altRow = rowNum + this.nRows;
+                    }
+                    
+                    if (colNum + j < 0) {
+                        altCol = colNum + this.mColumns;
+                    }
+
+                    if (rowNum + i > this.nRows - 1) {
+                        altRow = rowNum - this.nRows;
+                    }
+
+                    if (colNum + j > this.mColumns - 1) {
+                        altCol = colNum - this.mColumns;
+                    }
+
+                    neighbors.push(this.getCell(altRow + i, altCol + j));
                 }
             }
 
@@ -107,7 +122,6 @@
         };
 
         this.stepForward = function() {
-            console.log('stepping forward');
             var nextState = [];
             
             for (var i = 0; i < this.nRows; i++) {
@@ -129,12 +143,28 @@
             }
         };
 
-        this.animate = function() {
-            setInterval(
-                this.stepForward.bind(this), 
-                ANIMATION_TIME_STEP
-            )
-        }
+        this.toggleAnimation = function() {
+            if (!this.animationOn) {
+                this.animationOn = true;
+
+                this.animationIntervalId = setInterval(
+                    this.stepForward.bind(this), 
+                    ANIMATION_TIME_STEP
+                );
+
+            } else {
+                if (typeof this.animationIntervalId !== 'undefined' || this.animationIntervalId !== null) {
+                    clearInterval(this.animationIntervalId)
+                }
+                this.animationOn = false;
+            }
+
+            return this.animationOn;
+        };
+    }
+
+    function animationHandler() {
+        
     }
 
     function main() {
@@ -148,9 +178,15 @@
          });
 
         animateButton = document.getElementById('animate');
+
         animateButton.addEventListener('click', function() {
-            console.log('animating');
-            board.animate();
+            var animationOn = board.toggleAnimation();
+
+            if (animationOn) {
+                animateButton.textContent = 'stop animation';
+            } else {
+                animateButton.textContent = 'start animation';
+            }
         });
     }
 
