@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+   <div id="line-game"></div>
+   <script>
+
+var nRows = mColumns = 5;
+var canvasHeight = 400;
+var canvasWidth = 400;
+
+var lineGameElt = document.getElementById('line-game');
+
+var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+svg.setAttribute('width', 400);
+svg.setAttribute('height', 400);
+
+lineGameElt.appendChild(svg);
+
+var lineLength = canvasHeight / (nRows + 1) / 2;
+var lineWidth = lineLength / 3 / 2;
+
+// Strores a Matrix
+for (var i = 0; i < nRows * 2 + 1; i++) {
+    for (var j = 0; j < mColumns * 2 + 1; j++) {
+        var actor = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        
+        if (i % 2 === 0) {
+            if (j % 2 === 0) {
+                // vertex
+                actor.setAttribute('x', i * lineLength);
+                actor.setAttribute('y', j * lineLength);
+
+                actor.setAttribute('width', lineLength);
+                actor.setAttribute('height', lineLength);
+                actor.style.stroke = 'black';
+                actor.style.fill = 'green';
+            } else {
+                // vertical line
+                actor.setAttribute('x', i * lineLength + 2.5 * lineWidth);
+                actor.setAttribute('y', j * lineLength);
+
+                actor.setAttribute('width', lineWidth);
+                actor.setAttribute('height', lineLength);
+                actor.style.stroke = 'black'
+                actor.style.fill = 'green';
+            }
+        } else {
+            if (j % 2 === 0) {
+                // horizontal line
+                actor.setAttribute('x', i * lineLength);
+                actor.setAttribute('y', j * lineLength + 2.5 * lineWidth);
+
+                actor.setAttribute('width', lineLength);
+                actor.setAttribute('height', lineWidth);
+                actor.style.stroke = 'black'
+                actor.style.fill = 'white';
+            } else {
+                // emtpy space
+                actor.setAttribute('x', i * lineLength);
+                actor.setAttribute('y', j * lineLength);
+
+                actor.setAttribute('width', lineLength);
+                actor.setAttribute('height', lineLength);
+                actor.style.stroke = 'black'
+                actor.style.fill = 'white';
+            }
+        }
+
+        svg.appendChild(actor);
+    }
+}
+
+
+   </script>
+</body>
+</html>
