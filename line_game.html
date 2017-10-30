@@ -23,7 +23,6 @@ lineGameElt.appendChild(svg);
 var lineLength = canvasHeight / (nRows + 1) / 2;
 var lineWidth = lineLength / 3 / 2;
 
-// Strores a Matrix
 for (var i = 0; i < nRows * 2 + 1; i++) {
     for (var j = 0; j < mColumns * 2 + 1; j++) {
         var actor = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -37,7 +36,7 @@ for (var i = 0; i < nRows * 2 + 1; i++) {
                 actor.setAttribute('width', lineLength);
                 actor.setAttribute('height', lineLength);
                 actor.style.stroke = 'black';
-                actor.style.fill = 'green';
+                actor.style.fill = 'black';
             } else {
                 // vertical line
                 actor.setAttribute('x', i * lineLength + 2.5 * lineWidth);
@@ -46,7 +45,7 @@ for (var i = 0; i < nRows * 2 + 1; i++) {
                 actor.setAttribute('width', lineWidth);
                 actor.setAttribute('height', lineLength);
                 actor.style.stroke = 'black'
-                actor.style.fill = 'green';
+                actor.style.fill = 'white';
             }
         } else {
             if (j % 2 === 0) {
@@ -65,7 +64,7 @@ for (var i = 0; i < nRows * 2 + 1; i++) {
 
                 actor.setAttribute('width', lineLength);
                 actor.setAttribute('height', lineLength);
-                actor.style.stroke = 'black'
+                actor.style.stroke = 'white'
                 actor.style.fill = 'white';
             }
         }
