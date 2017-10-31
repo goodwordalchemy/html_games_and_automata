@@ -11,6 +11,65 @@
 N_ROWS = M_COLUMNS = 5;
 BOARD_HEIGHT = BOARD_WIDTH = 400;
 
+var lineLength = BOARD_HEIGHT / (N_ROWS + 1) / 2;
+
+
+var lineWidth = lineLength / 3 / 2;
+
+
+function Actor(x, y, width, height, strokeColor, fillColor) {
+    this.elt = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+
+    this.elt.setAttribute('x', x);
+    this.elt.setAttribute('y', y);
+
+    this.elt.setAttribute('width', width);
+    this.elt.setAttribute('height', height);
+
+    this.elt.style.stroke = strokeColor;
+    this.elt.style.fill = fillColor;
+}
+
+Actor.prototype.updateColor = function(color) {
+    this.elt.style.fill = color;
+}
+
+
+function LineActor(x, y, orientation) {
+    var width, height;
+
+    if (orientation == 'vertical') {
+
+        width = lineWidth;
+        height = lineLength;
+        x += 2.5 * lineWidth
+
+    } else if (orientation === 'horizontal') {
+
+        width = lineLength;
+        height = lineWidth;
+        y += 2.5 * lineWidth
+    }
+
+    // TODO: else throw.
+
+    Actor.call(this, x, y, width, height, 'black', 'white');
+}
+LineActor.prototype = Object.create(Actor.prototype);
+
+
+function InnerBoxActor(x, y) {
+    Actor.call(this, x, y, lineLength, lineLength, 'white', 'white');
+}
+InnerBoxActor.prototype = Object.create(Actor.prototype);
+
+
+function VertexActor(x, y) {
+    Actor.call(this, x, y, lineLength, lineLength, 'black', 'black');
+}
+VertexActor.prototype = Object.create(Actor.prototype);
+
+
 function Board(nRows, mColumns, boardWidth, boardHeight) {
 
     this.lineGameElt = document.getElementById('line-game');
@@ -21,8 +80,6 @@ function Board(nRows, mColumns, boardWidth, boardHeight) {
 
     this.lineGameElt.appendChild(svg);
 
-    var lineLength = boardHeight / (nRows + 1) / 2;
-    var lineWidth = lineLength / 3 / 2;
 
     this.actorsArray = [];
 
@@ -31,59 +88,32 @@ function Board(nRows, mColumns, boardWidth, boardHeight) {
         var rowArray = [];
 
         for (var j = 0; j < mColumns * 2 + 1; j++) {
-            var actor = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            
+
+            var actor;
+
             if (i % 2 === 0) {
+
                 if (j % 2 === 0) {
-                    // vertex
-                    actor.setAttribute('x', i * lineLength);
-                    actor.setAttribute('y', j * lineLength);
-
-                    actor.setAttribute('width', lineLength);
-                    actor.setAttribute('height', lineLength);
-                    actor.style.stroke = 'black';
-                    actor.style.fill = 'black';
-
+                    actor = new VertexActor(i * lineLength, j * lineLength);
                 } else {
-                    // vertical line
-                    actor.setAttribute('x', i * lineLength + 2.5 * lineWidth);
-                    actor.setAttribute('y', j * lineLength);
-
-                    actor.setAttribute('width', lineWidth);
-                    actor.setAttribute('height', lineLength);
-                    actor.style.stroke = 'black';
-                    actor.style.fill = 'white';
+                    actor = new LineActor(i * lineLength, j * lineLength, 'vertical');
                 }
+
             } else {
+
                 if (j % 2 === 0) {
-                    // horizontal line
-                    actor.setAttribute('x', i * lineLength);
-                    actor.setAttribute('y', j * lineLength + 2.5 * lineWidth);
-
-                    actor.setAttribute('width', lineLength);
-                    actor.setAttribute('height', lineWidth);
-                    actor.style.stroke = 'black';
-                    actor.style.fill = 'white';
-
+                    actor = new LineActor(i * lineLength, j * lineLength, 'horizontal');
                 } else {
-                    // emtpy space
-                    actor.setAttribute('x', i * lineLength);
-                    actor.setAttribute('y', j * lineLength);
-
-                    actor.setAttribute('width', lineLength);
-                    actor.setAttribute('height', lineLength);
-                    actor.style.stroke = 'white';
-                    actor.style.fill = 'white';
+                    actor = new InnerBoxActor(i * lineLength, j * lineLength);
                 }
             }
 
-            svg.appendChild(actor);
+            svg.appendChild(actor.elt);
 
             rowArray.push(actor);
         }
         
         this.actorsArray.push(actor);
-
     }
 }
 
