@@ -8,70 +8,87 @@
    <div id="line-game"></div>
    <script>
 
-var nRows = mColumns = 5;
-var canvasHeight = 400;
-var canvasWidth = 400;
+N_ROWS = M_COLUMNS = 5;
+BOARD_HEIGHT = BOARD_WIDTH = 400;
 
-var lineGameElt = document.getElementById('line-game');
+function Board(nRows, mColumns, boardWidth, boardHeight) {
 
-var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-svg.setAttribute('width', 400);
-svg.setAttribute('height', 400);
+    this.lineGameElt = document.getElementById('line-game');
 
-lineGameElt.appendChild(svg);
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', boardWidth);
+    svg.setAttribute('height', boardHeight);
 
-var lineLength = canvasHeight / (nRows + 1) / 2;
-var lineWidth = lineLength / 3 / 2;
+    this.lineGameElt.appendChild(svg);
 
-for (var i = 0; i < nRows * 2 + 1; i++) {
-    for (var j = 0; j < mColumns * 2 + 1; j++) {
-        var actor = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        
-        if (i % 2 === 0) {
-            if (j % 2 === 0) {
-                // vertex
-                actor.setAttribute('x', i * lineLength);
-                actor.setAttribute('y', j * lineLength);
+    var lineLength = boardHeight / (nRows + 1) / 2;
+    var lineWidth = lineLength / 3 / 2;
 
-                actor.setAttribute('width', lineLength);
-                actor.setAttribute('height', lineLength);
-                actor.style.stroke = 'black';
-                actor.style.fill = 'black';
+    this.actorsArray = [];
+
+    for (var i = 0; i < nRows * 2 + 1; i++) {
+
+        var rowArray = [];
+
+        for (var j = 0; j < mColumns * 2 + 1; j++) {
+            var actor = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            
+            if (i % 2 === 0) {
+                if (j % 2 === 0) {
+                    // vertex
+                    actor.setAttribute('x', i * lineLength);
+                    actor.setAttribute('y', j * lineLength);
+
+                    actor.setAttribute('width', lineLength);
+                    actor.setAttribute('height', lineLength);
+                    actor.style.stroke = 'black';
+                    actor.style.fill = 'black';
+
+                } else {
+                    // vertical line
+                    actor.setAttribute('x', i * lineLength + 2.5 * lineWidth);
+                    actor.setAttribute('y', j * lineLength);
+
+                    actor.setAttribute('width', lineWidth);
+                    actor.setAttribute('height', lineLength);
+                    actor.style.stroke = 'black';
+                    actor.style.fill = 'white';
+                }
             } else {
-                // vertical line
-                actor.setAttribute('x', i * lineLength + 2.5 * lineWidth);
-                actor.setAttribute('y', j * lineLength);
+                if (j % 2 === 0) {
+                    // horizontal line
+                    actor.setAttribute('x', i * lineLength);
+                    actor.setAttribute('y', j * lineLength + 2.5 * lineWidth);
 
-                actor.setAttribute('width', lineWidth);
-                actor.setAttribute('height', lineLength);
-                actor.style.stroke = 'black'
-                actor.style.fill = 'white';
+                    actor.setAttribute('width', lineLength);
+                    actor.setAttribute('height', lineWidth);
+                    actor.style.stroke = 'black';
+                    actor.style.fill = 'white';
+
+                } else {
+                    // emtpy space
+                    actor.setAttribute('x', i * lineLength);
+                    actor.setAttribute('y', j * lineLength);
+
+                    actor.setAttribute('width', lineLength);
+                    actor.setAttribute('height', lineLength);
+                    actor.style.stroke = 'white';
+                    actor.style.fill = 'white';
+                }
             }
-        } else {
-            if (j % 2 === 0) {
-                // horizontal line
-                actor.setAttribute('x', i * lineLength);
-                actor.setAttribute('y', j * lineLength + 2.5 * lineWidth);
 
-                actor.setAttribute('width', lineLength);
-                actor.setAttribute('height', lineWidth);
-                actor.style.stroke = 'black'
-                actor.style.fill = 'white';
-            } else {
-                // emtpy space
-                actor.setAttribute('x', i * lineLength);
-                actor.setAttribute('y', j * lineLength);
+            svg.appendChild(actor);
 
-                actor.setAttribute('width', lineLength);
-                actor.setAttribute('height', lineLength);
-                actor.style.stroke = 'white'
-                actor.style.fill = 'white';
-            }
+            rowArray.push(actor);
         }
+        
+        this.actorsArray.push(actor);
 
-        svg.appendChild(actor);
     }
 }
+
+board = new Board(N_ROWS, M_COLUMNS, BOARD_WIDTH, BOARD_HEIGHT);
+
 
 
    </script>
