@@ -56,12 +56,24 @@ function LineActor(x, y, orientation) {
 
 }
 LineActor.prototype = Object.create(Actor.prototype);
+LineActor.prototype.setClicked = function(clickedBool) {
+    this.clicked = clickedBool;
+}
+LineActor.prototype.getClicked = function() {
+    return this.clicked;
+}
 
 
 function InnerBoxActor(x, y) {
     Actor.call(this, x, y, lineLength, lineLength, 'white', 'white');
 }
 InnerBoxActor.prototype = Object.create(Actor.prototype);
+InnerBoxActor.prototype.setFilled = function(filledBool) {
+    this.filled = filledBool;
+}
+InnerBoxActor.prototype.getFilled = function() {
+    return this.filled;
+}
 
 
 function VertexActor(x, y) {
@@ -130,7 +142,12 @@ ActorGrid.prototype.createActorsArray = function(nRows, mColumns, boardWidth, bo
 }
 ActorGrid.prototype.getActorCallback = function(actor) {
     return function() {
+        if (actor.getClicked()) {
+            return;
+        }
         actor.setFillColor(this.playerColor);
+        actor.setClicked(true);
+
         this.bubbleUpActorClickEvent();
     }.bind(this);
 }
@@ -140,7 +157,55 @@ ActorGrid.prototype.setPlayerColor = function(color) {
 ActorGrid.prototype.bubbleUpActorClickEvent = function() {
    this.game.actorClicked();
 }
+ActorGrid.prototype.getUnfilledInnerBoxActorIndices = function() {
+    var innerBoxActorIndices = [];
+
+    for (var i = 0; i < this.actorsArray.length; i++) {
+        for (var j = 0; j < this.actorsArray[i].length; j++) {
+            if (!(this.actorsArray[i][j] instanceof InnerBoxActor)) {
+                continue;
+            }
+            
+            if (!this.actorsArray[i][j].getFilled()) {
+                innerBoxActorIndices.push([i, j]);
+            }
+        }
+    }
+
+    return innerBoxActorIndices;
+}
+ActorGrid.prototype.getActor = function(x, y) {
+    return this.actorsArray[x][y];
+}
 ActorGrid.prototype.countAndHighlightBoxes = function() {
+    var innerBoxActorIndices = this.getUnfilledInnerBoxActorIndices();
+
+    var boxCount = 0;
+
+    for (var i = 0; i < innerBoxActorIndices.length; i++) {
+        var x = innerBoxActorIndices[i][0];
+        var y = innerBoxActorIndices[i][1];
+
+        var neighbors = [
+            this.getActor(x, y + 1),
+            this.getActor(x - 1, y),
+            this.getActor(x + 1, y),
+            this.getActor(x, y - 1) 
+        ];
+
+        var boxFormed = neighbors.every(function(actor) {
+            return actor.getClicked();
+        });
+
+        var innerBoxActor = this.getActor(x, y);
+        if (boxFormed) {
+            innerBoxActor.setFillColor(this.playerColor);
+            innerBoxActor.setFilled(true);
+            boxCount += 1;
+        }
+    }
+
+    return boxCount;
 }
 
 
@@ -210,7 +275,7 @@ Game.prototype.actorClicked = function() {
     var numBoxes = this.actorGrid.countAndHighlightBoxes();
 
     if (numBoxes) {
-        console.log(this.getCurrentPlayer().getColor() + 'go again!');
+        console.log(this.getCurrentPlayer().getColor() + ' go again!');
     } else {
         this.togglePlayerTurn();
     }
