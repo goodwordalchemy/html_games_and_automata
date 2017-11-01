@@ -222,24 +222,32 @@ function ScoreBoard(playersArray) {
     this.playersArray = playersArray;
 
     var previousScoreboardElt = document.getElementById('score-board');
+
     if (previousScoreboardElt) {
-        previousScoreboardElt.parent.removeChild(previousScoreboardElt);
+        previousScoreboardElt.parentNode.removeChild(previousScoreboardElt);
     }
 
     this.elt = document.createElement('div');
     this.elt.id = 'score-board';
     
-    for (var i = 0; i < this.playersArray.length; i++) {
-        var playerInfo = document.createElement('div');
-
-        playerInfo.textContent = playersArray[i].color + ': ' + playersArray[i].score;
-
-        this.elt.appendChild(playerInfo)
-    }
+    this.drawContent();
 
     var lineGameElt = document.getElementById('line-game');
     lineGameElt.appendChild(this.elt);
 
+}
+ScoreBoard.prototype.drawContent = function() {
+    while (this.elt.hasChildNodes()) {
+        this.elt.removeChild(this.elt.lastChild);
+    }
+
+    for (var i = 0; i < this.playersArray.length; i++) {
+        var playerInfo = document.createElement('div');
+
+        playerInfo.textContent = this.playersArray[i].color + ': ' + this.playersArray[i].score;
+
+        this.elt.appendChild(playerInfo)
+    }
 }
 ScoreBoard.prototype.highlightPlayer = function(playerNumber) {
     for (var i = 0; i < this.elt.childNodes.length; i++) {
@@ -276,6 +284,10 @@ Game.prototype.actorClicked = function() {
 
     if (numBoxes) {
         console.log(this.getCurrentPlayer().getColor() + ' go again!');
+
+        this.players[this.currentPlayerIndex].score += numBoxes;
+        this.scoreBoard.drawContent();
+        this.scoreBoard.highlightPlayer(this.currentPlayerIndex);
     } else {
         this.togglePlayerTurn();
     }
