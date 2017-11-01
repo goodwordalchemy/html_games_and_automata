@@ -30,7 +30,7 @@ function Actor(x, y, width, height, strokeColor, fillColor) {
     this.elt.style.fill = fillColor;
 }
 
-Actor.prototype.updateColor = function(color) {
+Actor.prototype.setFillColor = function(color) {
     this.elt.style.fill = color;
 }
 
@@ -54,6 +54,7 @@ function LineActor(x, y, orientation) {
     // TODO: else throw.
 
     Actor.call(this, x, y, width, height, 'black', 'white');
+
 }
 LineActor.prototype = Object.create(Actor.prototype);
 
@@ -71,6 +72,14 @@ VertexActor.prototype = Object.create(Actor.prototype);
 
 
 function Board(nRows, mColumns, boardWidth, boardHeight) {
+    this.setPlayerColor = function(color) {
+        console.log('setting player color to', color);
+        this.playerColor = color;       
+    }
+
+    this.getPlayerColor = function() {
+        return this.playerColor;
+    }
 
     this.lineGameElt = document.getElementById('line-game');
 
@@ -79,7 +88,6 @@ function Board(nRows, mColumns, boardWidth, boardHeight) {
     svg.setAttribute('height', boardHeight);
 
     this.lineGameElt.appendChild(svg);
-
 
     this.actorsArray = [];
 
@@ -97,12 +105,27 @@ function Board(nRows, mColumns, boardWidth, boardHeight) {
                     actor = new VertexActor(i * lineLength, j * lineLength);
                 } else {
                     actor = new LineActor(i * lineLength, j * lineLength, 'vertical');
+                    // this awful pattern came from here: https://stackoverflow.com/questions/750486/javascript-closure-inside-loops-simple-practical-example/19323214#19323214
+                    actorCallback = (function(actor) {
+                        return function() {
+                            console.log('hello from vertical event listener' + this.getPlayerColor());
+                            actor.setFillColor(this.getPlayerColor());
+                        }.bind(this)
+                    }.bind(this))(actor);
+                    actor.elt.addEventListener('click', actorCallback);
                 }
 
             } else {
 
                 if (j % 2 === 0) {
                     actor = new LineActor(i * lineLength, j * lineLength, 'horizontal');
+                    actorCallback = (function(actor) {
+                        return function() {
+                            console.log('hello from vertical event listener' + this.getPlayerColor());
+                            actor.setFillColor(this.getPlayerColor());
+                        }.bind(this)
+                    }.bind(this))(actor);
+                    actor.elt.addEventListener('click', actorCallback);
                 } else {
                     actor = new InnerBoxActor(i * lineLength, j * lineLength);
                 }
@@ -115,10 +138,96 @@ function Board(nRows, mColumns, boardWidth, boardHeight) {
         
         this.actorsArray.push(actor);
     }
+
+    this.getlines = function() {
+        var lines = [];
+
+        for (var i = 0; i < this.actorsArray.length; i++) {
+            var row = [];
+
+            for (var j = 0; j < this.actorsArray[i].length; j++) {
+                if (this.actorsArray[i] instanceof LineActor) {
+                    row.push(this.actorsArray[i][j]);
+                }
+            }
+
+            lines.push(row);
+        }
+
+        return lines;
+    }
 }
 
-board = new Board(N_ROWS, M_COLUMNS, BOARD_WIDTH, BOARD_HEIGHT);
+function Player(color) {
+    this.color = color;
 
+    this.score = 0;
+}
+
+function ScoreBoard(playersArray) {
+    this.playersArray = playersArray;
+
+    var previousScoreboard = document.getElementById('score-board');
+    if (previousScoreboard) {
+        previousScoreboard.parent.removeChild(previousScoreboard);
+    }
+
+    this.elt = document.createElement('div');
+    this.elt.id = 'score-board';
+    
+    for (var i = 0; i < this.playersArray.length; i++) {
+        var playerInfo = document.createElement('div');
+
+        playerInfo.textContent = playersArray[i].color + ': ' + playersArray[i].score;
+
+        this.elt.appendChild(playerInfo)
+    }
+
+    var lineGameElt = document.getElementById('line-game');
+
+    lineGameElt.appendChild(this.elt);
+
+    this.highlightPlayer = function(playerNumber) {
+        for (var i = 0; i < this.elt.childNodes.length; i++) {
+            this.elt.childNodes[i].style['background-color'] = 'white';
+        
+        }
+        console.log(playerNumber);
+        this.elt.childNodes[playerNumber].style['background-color'] = 'yellow';
+    }
+}
+
+function Game() {
+    this.players = [new Player('red'), new Player('blue')];
+
+    this.playerSwitch = 0;
+
+    this.board = new Board(N_ROWS, M_COLUMNS, BOARD_WIDTH, BOARD_HEIGHT);
+
+    this.scoreBoard = new ScoreBoard(this.players);
+}
+
+Game.prototype.takeTurn = function(player) {
+}
+
+Game.prototype.findBoxes = function() {
+    // checks board to see if any boxes are found
+    // colors any boxes that are created
+    // increments score by number of boxes found
+    // returns true if a box is found
+}
+
+Game.prototype.start = function() {
+    this.scoreBoard.highlightPlayer(this.playerSwitch);
+
+    this.board.setPlayerColor(this.players[this.playerSwitch].color);
+
+    this.playerSwitch = this.playerSwitch ? 1 : 0;
+}
+
+
+var game = new Game();
+game.start();
 
 
    </script>
