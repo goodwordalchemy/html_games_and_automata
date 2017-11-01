@@ -29,7 +29,6 @@ function Actor(x, y, width, height, strokeColor, fillColor) {
     this.elt.style.stroke = strokeColor;
     this.elt.style.fill = fillColor;
 }
-
 Actor.prototype.setFillColor = function(color) {
     this.elt.style.fill = color;
 }
@@ -71,8 +70,9 @@ function VertexActor(x, y) {
 VertexActor.prototype = Object.create(Actor.prototype);
 
 
+function ActorGrid(game, nRows, mColumns, boardWidth, boardHeight) {
+    this.game = game;
 
-function ActorGrid(nRows, mColumns, boardWidth, boardHeight) {
     this.nRows = nRows;
     this.mColumns = mColumns;
 
@@ -128,37 +128,37 @@ ActorGrid.prototype.createActorsArray = function(nRows, mColumns, boardWidth, bo
 
     return actorsArray;
 }
-
 ActorGrid.prototype.getActorCallback = function(actor) {
     return function() {
         actor.setFillColor(this.playerColor);
+        this.bubbleUpActorClickEvent();
     }.bind(this);
 }
-
 ActorGrid.prototype.setPlayerColor = function(color) {
     this.playerColor = color;       
 }
-
-
-function Board(nRows, mColumns, boardWidth, boardHeight) {
-    this.actorGrid = new ActorGrid(nRows, mColumns, boardWidth, boardHeight);
-
+ActorGrid.prototype.bubbleUpActorClickEvent = function() {
+   this.game.actorClicked();
 }
-
+ActorGrid.prototype.countAndHighlightBoxes = function() {
+}
 
 
 function Player(color) {
     this.color = color;
     this.score = 0;
 }
+Player.prototype.getColor = function() {
+    return this.color;
+}
 
 
 function ScoreBoard(playersArray) {
     this.playersArray = playersArray;
 
-    var previousScoreboard = document.getElementById('score-board');
-    if (previousScoreboard) {
-        previousScoreboard.parent.removeChild(previousScoreboard);
+    var previousScoreboardElt = document.getElementById('score-board');
+    if (previousScoreboardElt) {
+        previousScoreboardElt.parent.removeChild(previousScoreboardElt);
     }
 
     this.elt = document.createElement('div');
@@ -173,50 +173,51 @@ function ScoreBoard(playersArray) {
     }
 
     var lineGameElt = document.getElementById('line-game');
-
     lineGameElt.appendChild(this.elt);
 
-    this.highlightPlayer = function(playerNumber) {
-        for (var i = 0; i < this.elt.childNodes.length; i++) {
-            this.elt.childNodes[i].style['background-color'] = 'white';
-        
-        }
-        console.log(playerNumber);
-        this.elt.childNodes[playerNumber].style['background-color'] = 'yellow';
-    }
 }
+ScoreBoard.prototype.highlightPlayer = function(playerNumber) {
+    for (var i = 0; i < this.elt.childNodes.length; i++) {
+        this.elt.childNodes[i].style['background-color'] = 'white';
+    }
+
+    this.elt.childNodes[playerNumber].style['background-color'] = 'yellow';
+}
+
 
 function Game() {
     this.players = [new Player('red'), new Player('blue')];
 
-    this.playerSwitch = 0;
-
-    this.board = new Board(N_ROWS, M_COLUMNS, BOARD_WIDTH, BOARD_HEIGHT);
+    this.actorGrid = new ActorGrid(this, N_ROWS, M_COLUMNS, BOARD_WIDTH, BOARD_HEIGHT)
 
     this.scoreBoard = new ScoreBoard(this.players);
+
+    this.currentPlayerIndex = 0;
+    this.togglePlayerTurn();
 }
-
-Game.prototype.takeTurn = function(player) {
+Game.prototype.getCurrentPlayer = function() {
+    return this.players[this.currentPlayerIndex];
 }
+Game.prototype.togglePlayerTurn = function() {
+    this.currentPlayerIndex = this.currentPlayerIndex ? 0 : 1;
 
-Game.prototype.findBoxes = function() {
-    // checks board to see if any boxes are found
-    // colors any boxes that are created
-    // increments score by number of boxes found
-    // returns true if a box is found
+    this.scoreBoard.highlightPlayer(this.currentPlayerIndex);
+    
+    this.actorGrid.setPlayerColor(this.getCurrentPlayer().getColor());
+
 }
+Game.prototype.actorClicked = function() {
+    var numBoxes = this.actorGrid.countAndHighlightBoxes();
 
-Game.prototype.start = function() {
-    this.scoreBoard.highlightPlayer(this.playerSwitch);
-
-    this.board.actorGrid.setPlayerColor(this.players[this.playerSwitch].color);
-
-    this.playerSwitch = this.playerSwitch ? 1 : 0;
+    if (numBoxes) {
+        console.log(this.getCurrentPlayer().getColor() + 'go again!');
+    } else {
+        this.togglePlayerTurn();
+    }
 }
 
 
 var game = new Game();
-game.start();
 
 
    </script>
