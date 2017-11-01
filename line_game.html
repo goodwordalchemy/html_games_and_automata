@@ -71,98 +71,87 @@ function VertexActor(x, y) {
 VertexActor.prototype = Object.create(Actor.prototype);
 
 
-function Board(nRows, mColumns, boardWidth, boardHeight) {
-    this.setPlayerColor = function(color) {
-        console.log('setting player color to', color);
-        this.playerColor = color;       
-    }
 
-    this.getPlayerColor = function() {
-        return this.playerColor;
-    }
+function ActorGrid(nRows, mColumns, boardWidth, boardHeight) {
+    this.nRows = nRows;
+    this.mColumns = mColumns;
 
-    this.lineGameElt = document.getElementById('line-game');
+    var lineGameElt = document.getElementById('line-game');
 
-    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', boardWidth);
-    svg.setAttribute('height', boardHeight);
+    this.elt = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    this.elt.setAttribute('width', boardWidth);
+    this.elt.setAttribute('height', boardHeight);
 
-    this.lineGameElt.appendChild(svg);
+    lineGameElt.appendChild(this.elt);
 
-    this.actorsArray = [];
+    this.actorsArray = this.createActorsArray(this.nRows, this.mColumns, boardWidth, boardHeight);
+
+}
+ActorGrid.prototype.createActorsArray = function(nRows, mColumns, boardWidth, boardHeight) {
+    actorsArray = [];
 
     for (var i = 0; i < nRows * 2 + 1; i++) {
-
         var rowArray = [];
 
         for (var j = 0; j < mColumns * 2 + 1; j++) {
-
             var actor;
 
             if (i % 2 === 0) {
-
                 if (j % 2 === 0) {
                     actor = new VertexActor(i * lineLength, j * lineLength);
                 } else {
                     actor = new LineActor(i * lineLength, j * lineLength, 'vertical');
-                    // this awful pattern came from here: https://stackoverflow.com/questions/750486/javascript-closure-inside-loops-simple-practical-example/19323214#19323214
-                    actorCallback = (function(actor) {
-                        return function() {
-                            console.log('hello from vertical event listener' + this.getPlayerColor());
-                            actor.setFillColor(this.getPlayerColor());
-                        }.bind(this)
-                    }.bind(this))(actor);
+
+                    actorCallback = this.getActorCallback(actor);
+
                     actor.elt.addEventListener('click', actorCallback);
                 }
-
             } else {
-
                 if (j % 2 === 0) {
                     actor = new LineActor(i * lineLength, j * lineLength, 'horizontal');
-                    actorCallback = (function(actor) {
-                        return function() {
-                            console.log('hello from vertical event listener' + this.getPlayerColor());
-                            actor.setFillColor(this.getPlayerColor());
-                        }.bind(this)
-                    }.bind(this))(actor);
+
+                    actorCallback = this.getActorCallback(actor);
+
                     actor.elt.addEventListener('click', actorCallback);
                 } else {
                     actor = new InnerBoxActor(i * lineLength, j * lineLength);
                 }
             }
 
-            svg.appendChild(actor.elt);
+            this.elt.appendChild(actor.elt);
 
             rowArray.push(actor);
         }
         
-        this.actorsArray.push(actor);
+        actorsArray.push(rowArray);
     }
 
-    this.getlines = function() {
-        var lines = [];
-
-        for (var i = 0; i < this.actorsArray.length; i++) {
-            var row = [];
-
-            for (var j = 0; j < this.actorsArray[i].length; j++) {
-                if (this.actorsArray[i] instanceof LineActor) {
-                    row.push(this.actorsArray[i][j]);
-                }
-            }
-
-            lines.push(row);
-        }
-
-        return lines;
-    }
+    return actorsArray;
 }
+
+ActorGrid.prototype.getActorCallback = function(actor) {
+    return function() {
+        actor.setFillColor(this.playerColor);
+    }.bind(this);
+}
+
+ActorGrid.prototype.setPlayerColor = function(color) {
+    this.playerColor = color;       
+}
+
+
+function Board(nRows, mColumns, boardWidth, boardHeight) {
+    this.actorGrid = new ActorGrid(nRows, mColumns, boardWidth, boardHeight);
+
+}
+
+
 
 function Player(color) {
     this.color = color;
-
     this.score = 0;
 }
+
 
 function ScoreBoard(playersArray) {
     this.playersArray = playersArray;
@@ -220,7 +209,7 @@ Game.prototype.findBoxes = function() {
 Game.prototype.start = function() {
     this.scoreBoard.highlightPlayer(this.playerSwitch);
 
-    this.board.setPlayerColor(this.players[this.playerSwitch].color);
+    this.board.actorGrid.setPlayerColor(this.players[this.playerSwitch].color);
 
     this.playerSwitch = this.playerSwitch ? 1 : 0;
 }
