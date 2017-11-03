@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>HTML Games and Automata for Fun and Practice</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
     <header>
@@ -10,12 +11,21 @@
         <p>for Fun and Practice</p>
     </header>
 
-    {% block content %}{% endblock %}
+    <p>
+    This is my mini app portfolio.  In the Fall of 2017, I realized that I didn't know nearly as much web app development as I thought I did, so I started making these simple games and web apps in order to practice.
+    </p>
 
     <h3>Contents:</h3>
     <ul>
     {% for mini_app in mini_apps %}
-        <li><a href="{{ url_for('mini_app', filename=mini_app.filename) }}">{{ mini_app.name }}</a></li>
+        <li>
+            <a href="{{ url_for('mini_app', filename=mini_app.filename) }}">{{ mini_app.name }}</a>
+            {% if (mini_app.filename == filename) %}
+            <div id="mini-app-border">
+                    {% block content %}{% endblock %}
+                </div>
+            {% endif %}
+        </li>
     {% endfor %}
     </ul>
     

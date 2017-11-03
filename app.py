@@ -13,8 +13,11 @@ def index():
 
 @app.route('/mini_app/<filename>')
 def mini_app(filename):
-    print('rendering filename: {}'.format(filename))
-    return render_template(filename, mini_apps=MINI_APPS)
+    return render_template(
+        filename,
+        filename=filename,
+        mini_apps=MINI_APPS
+    )
 
 if __name__ == '__main__':
     app.run()
