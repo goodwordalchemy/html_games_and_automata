@@ -6,7 +6,6 @@ flask==0.12.2
 itsdangerous==0.24
 jinja2==2.9.6
 markupsafe==1.0
-openssl==1.0.2l
 pip==9.0.1
 python==3.6.3
 readline==7.0
