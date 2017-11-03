@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>HTML Games and Automata for Fun and Practice</title>
+</head>
+<body>
+    <header>
+        <h1>HTML Games and Automata</h1>
+        <p>for Fun and Practice</p>
+    </header>
+
+    {% block content %}{% endblock %}
+
+    <h3>Contents:</h3>
+    <ul>
+    {% for mini_app in mini_apps %}
+        <li><a href="{{ url_for('mini_app', filename=mini_app.filename) }}">{{ mini_app.name }}</a></li>
+    {% endfor %}
+    </ul>
+    
+</body>
+</html>
