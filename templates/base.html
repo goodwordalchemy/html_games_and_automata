@@ -21,8 +21,8 @@
         <li>
             <a href="{{ url_for('mini_app', filename=mini_app.filename) }}">{{ mini_app.name }}</a>
             {% if (mini_app.filename == filename) %}
-            <div id="mini-app-border">
-                    {% block content %}{% endblock %}
+                <div id="mini-app-border">
+                {% block content %}{% endblock %}
                 </div>
             {% endif %}
         </li>
