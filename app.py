@@ -3,6 +3,7 @@ from flask import Flask, render_template
 MINI_APPS = [
     {'name': 'Line Game', 'filename': 'line_game.html'},
     {'name': 'Conway\'s Game Of Life', 'filename': 'conways_game_of_life.html'},
+    {'name': 'Sand Pile Game', 'filename': 'sandpiles.html'}
 ]
 
 app = Flask(__name__)
