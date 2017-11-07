@@ -23,6 +23,9 @@ CellGrid.prototype.initializeVirtualGrid = function(initialSlope) {
 CellGrid.prototype.getCell = function(x, y) {
     return this.virtualGrid[x][y];
 }
+CellGrid.prototype.setCell = function(x, y, value) {
+    this.virtualGrid[x][y] = value;
+}
 CellGrid.prototype.avalancheCell = function(x, y) {
     this.virtualGrid[x][y] -= 4;
 
@@ -56,14 +59,14 @@ function GameCanvas(canvasWidth, canvasHeight) {
     this.canvasWidth = canvasWidth;
     this.canvasHeight = canvasHeight;
         
-    var canvasElt = document.createElement('canvas');
-    canvasElt.setAttribute('height', canvasHeight);
-    canvasElt.setAttribute('width', canvasWidth);
+    this.elt = document.createElement('canvas');
+    this.elt.setAttribute('height', canvasHeight);
+    this.elt.setAttribute('width', canvasWidth);
 
     var lineGameDiv = document.getElementById('sand-piles');
-    lineGameDiv.appendChild(canvasElt);
+    lineGameDiv.appendChild(this.elt);
 
-    this.context = canvasElt.getContext('2d');
+    this.context = this.elt.getContext('2d');
 }
 GameCanvas.prototype.draw = function(cellGrid) {
     var numberOfRows = cellGrid.virtualGrid.length;
@@ -71,6 +74,9 @@ GameCanvas.prototype.draw = function(cellGrid) {
 
     var cellWidth = this.canvasWidth / numberOfColumns;
     var cellHeight = this.canvasHeight / numberOfRows;
+
+    this.cellWidth = cellWidth;
+    this.cellHeight = cellHeight;
 
     cellGrid.virtualGrid.forEach(function(row, i){
         row.forEach(function(cellValue, j){
@@ -91,6 +97,18 @@ GameCanvas.prototype.draw = function(cellGrid) {
         }, this);
     }, this);
 }
+GameCanvas.prototype.getClickCellCoordinates = function(event) {
+    var elemLeft = this.elt.offsetLeft,
+        elemTop = this.elt.offsetTop;
+
+    var xPixel = event.pageX - elemLeft,
+        yPixel = event.pageY - elemTop;
+
+    var xCell = Math.floor(xPixel / this.cellWidth);
+    var yCell = Math.floor(yPixel / this.cellHeight);
+        
+    return [xCell, yCell];
+}
 
 
 function Game(timestep) {
@@ -100,16 +118,27 @@ function Game(timestep) {
     this.cellGrid.initializeVirtualGrid(4);
 
     this.canvas = new GameCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+    this.canvas.elt.addEventListener('click', this.canvasClickCallback.bind(this));
 
-    this.evolve();
+    this.intervalId = setInterval(this.step.bind(this), this.timestep);
 }
 Game.prototype.step = function() {
     this.cellGrid.step();
 
     this.canvas.draw(this.cellGrid);
 }
-Game.prototype.evolve = function() {
-    setInterval(this.step.bind(this), this.timestep);
+Game.prototype.canvasClickCallback = function(event) {
+    var coords = this.canvas.getClickCellCoordinates(event);
+
+    var x = coords[0],
+        y = coords[1];
+
+    var currentCellValue = this.cellGrid.getCell(x, y);
+
+    this.cellGrid.setCell(x, y, currentCellValue + 1);
+
 }
+
+
 
 new Game(100);
