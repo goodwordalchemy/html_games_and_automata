@@ -108,9 +108,45 @@ GameCanvas.prototype.getClickCellCoordinates = function(event) {
     return [xCell, yCell];
 }
 
+function TimeStepSlider(intialValue) {
+    this.timestep = intialValue;
+    this.elt = this.createElt();
+
+    addEventListener('input', this.inputCallback.bind(this));
+
+    var container = document.createElement('div');
+    container.className = 'timestep-slider';
+
+    var label = document.createElement('span');
+    label.textContent = 'timestep slider:';
+
+    container.appendChild(label);
+    container.appendChild(this.elt);
+
+    var lineGameDiv = document.getElementById('sand-piles');
+    lineGameDiv.appendChild(container);
+}
+TimeStepSlider.prototype.createElt = function() {
+    var elt = document.createElement('input');
+    elt.setAttribute('type', 'range');
+    elt.setAttribute('min', .1);
+    elt.setAttribute('max', 1000);
+    elt.setAttribute('value', this.timestep);
+
+    return elt;
+}
+TimeStepSlider.prototype.getTimeStep = function() {
+    return this.timestep;
+}
+TimeStepSlider.prototype.inputCallback = function(event) {
+    this.timestep = this.elt.value;
+}
+
+
 
 function Game(timestep) {
-    this.timestep = timestep;
+    this.timestepSlider = new TimeStepSlider(timestep);
+    this.timestepSlider.elt.addEventListener('input', this.timestepSliderCallback.bind(this));
 
     this.cellGrid = new CellGrid(50, 50)
     this.cellGrid.initializeVirtualGrid(4);
@@ -118,7 +154,16 @@ function Game(timestep) {
     this.canvas = new GameCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
     this.canvas.elt.addEventListener('click', this.canvasClickCallback.bind(this));
 
-    this.intervalId = setInterval(this.step.bind(this), this.timestep);
+    this.updateTimeStep(this.timestepSlider.getTimeStep());
+
+}
+Game.prototype.updateTimeStep = function(timestep) {
+    clearInterval(this.intervalId);
+    
+    this.intervalId = setInterval(
+        this.step.bind(this),
+        this.timestepSlider.getTimeStep()
+    );
 }
 Game.prototype.step = function() {
     this.cellGrid.step();
@@ -136,7 +181,9 @@ Game.prototype.canvasClickCallback = function(event) {
     this.cellGrid.setCell(x, y, currentCellValue + 1);
 
 }
-
+Game.prototype.timestepSliderCallback = function(event) {
+    this.updateTimeStep(this.timestepSlider.getTimeStep());
+}
 
 
 new Game(100);
