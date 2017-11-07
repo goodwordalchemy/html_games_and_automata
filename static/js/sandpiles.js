@@ -79,13 +79,11 @@ GameCanvas.prototype.draw = function(cellGrid) {
     this.cellHeight = cellHeight;
 
     cellGrid.virtualGrid.forEach(function(row, i){
-        row.forEach(function(cellValue, j){
-            var colorMap = {
-                0: 'white',
-                1: 'green',
-                2: 'yellow',
-                3: 'red',
-                4: 'black'
+        row.forEach(function(cellValue, j) {
+            var colorMap = {}
+            for (var k = 0; k < 5; k++) {
+                var colorCode = Math.floor(255 / 5 * (5 - k)).toString();
+                colorMap[k] = 'rgb(' + colorCode + ',' + colorCode + ',' + colorCode + ')';
             }
 
             this.context.fillStyle = colorMap[cellValue];
